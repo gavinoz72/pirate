@@ -1,0 +1,78 @@
+---
+title: "COMPLING"
+output: html_document
+runtime: shiny
+---
+
+# Word Processor App
+
+```{r, echo=FALSE}
+# UI layout
+fluidRow(
+  # Left column: input + dfResults
+  column(8,
+         div(style = "border-right: 1px solid #ccc; padding-right: 15px;",
+         h3("Word Input"),
+         textInput("word", "Enter a word:", value = "kunanua"),
+         h3("Results"),
+         tableOutput("dfResults")
+         )
+  ),
+  
+  # Right column: backend df + processed result
+  column(4,
+         h3("Back End"),
+         tableOutput("df"),
+         h3("Processed Result"),
+         verbatimTextOutput("result")
+  )
+)
+
+# Server logic for dfResults
+output$dfResults <- renderTable({
+  word <- input$word
+  result <- sub("^ku", "", word)
+
+  person <- c("1", "2", "3", "1p", "2p", "3p")
+  pronoun <- c("ni", "u", "a", "tu", "m", "wa")
+  present <- rep("na", 6)
+  past    <- rep("li", 6)
+  future  <- rep("ta", 6)
+
+  df <- data.frame(person, pronoun, present, past, future, stringsAsFactors = FALSE)
+
+  dfResults <- df
+  dfResults[,] <- ""
+
+  for(i in 1:nrow(df)){
+    for(j in 3:ncol(df)){
+      newWord <- paste(df[i,2], df[i,j], result)
+      newWord <- gsub(" ","", newWord)
+      dfResults[i,j] <- newWord
+    }
+  }
+
+  dfResults[,1] <- person
+  dfResults[,2] <- c("mimi", "wewe", "yeye", "sisi", "ninyi","wao")
+
+  dfResults
+})
+
+# Server logic for df
+output$df <- renderTable({
+  data.frame(
+    person  = c("1","2","3","1p","2p","3p"),
+    pronoun = c("ni","u","a","tu","m","wa"),
+    present = rep("na", 6),
+    past    = rep("li", 6),
+    future  = rep("ta", 6),
+    stringsAsFactors = FALSE
+  )
+})
+
+# Server logic for processed result
+output$result <- renderText({
+  word <- input$word
+  result <- sub("^ku", "", word)
+  paste("Processed result:", result)
+})
